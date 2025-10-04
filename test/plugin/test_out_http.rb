@@ -781,6 +781,18 @@ class HTTPOutputTest < HTTPOutputTestBase
   end
 end
 
+def test_emit_with_env_header
+  ENV['TOKEN'] = 'super-secret-token'
+  d = create_driver CONFIG + %[headers_from_placeholders {"Authorization":"Bearer #{ENV['TOKEN']}"}]
+  d.run(default_tag: 'test.metrics') do
+    d.feed({ 'field1' => 100 })
+  end
+
+  assert_equal 1, @posts.size
+  assert_equal "Bearer super-secret-token", @headers['Authorization']
+end
+
+
 class HTTPSOutputTest < HTTPOutputTestBase
   def self.port
     5127
